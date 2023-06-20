@@ -3,9 +3,9 @@
 /*
  * This class is the Game Scene.
  **/
-class GameScene2 extends Phaser.Scene {
+class GameScene extends Phaser.Scene {
   constructor() {
-    super({ key: "gameScene2" })
+    super({ key: "gameScene" })
     this.player = null
     this.score = 0
     this.lives = 3 // Initialize lives to 3
@@ -13,30 +13,29 @@ class GameScene2 extends Phaser.Scene {
     this.livesText = null // Text object for displaying lives
     this.scoreTextStyle = {
       font: "65px Arial",
-      fill: "#6aba5f",
-      align: "center",
+      fill: "#ffffff",
+      align: "center"
     }
     this.gameOverTextStyle = {
       font: "65px Arial",
       fill: "#ff0000",
-      align: "center",
+      align: "center"
     }
   }
 
   init(data) {
-    this.cameras.main.setBackgroundColor("#0x5f6e7a");
-    this.score = localStorage.getItem("Score") ? parseInt(localStorage.getItem("Score")) : 0
+    this.cameras.main.setBackgroundColor("#0x5f6e7a")
   }
 
   preload() {
-    console.log("GameScene2")
+    console.log("GameScene")
 
     // images
-    this.load.image("christmasBackground", "assets/christmasBackground.png")
-    this.load.image("christmasPlayer", "assets/christmascar.png")
-    this.load.image("christmasCandy", "assets/candycane.png")
-    this.load.image("christmasCar", "assets/reindeer.png")
-    this.load.image("nextLevel2", "assets/levelswitch2.png")
+    this.load.image("spookyBackground", "assets/Halloween.png")
+    this.load.image("player", "assets/spookycar.png")
+    this.load.image("candy", "assets/candy.png")
+    this.load.image("car", "assets/spookyenemy.png")
+    this.load.image("nextLevel", "assets/levelswitch.png")
 
     // sounds
     this.load.audio("collect", "assets/collect.mp3")
@@ -44,7 +43,7 @@ class GameScene2 extends Phaser.Scene {
   }
 
   create(data) {
-    this.background = this.add.image(0, 0, "christmasBackground").setScale(2.0)
+    this.background = this.add.image(0, 0, "spookyBackground").setScale(2.0)
     this.background.setOrigin(0, 0)
 
     this.scoreText = this.add.text(
@@ -64,7 +63,7 @@ class GameScene2 extends Phaser.Scene {
     )
     this.livesText.setOrigin(1, 0)
 
-    this.player = this.physics.add.sprite(1920 / 2, 1080 - 100, "christmasPlayer")
+    this.player = this.physics.add.sprite(1920 / 2, 1080 - 100, "player")
 
     // create a group for cars
     this.carGroup = this.add.group()
@@ -93,7 +92,7 @@ class GameScene2 extends Phaser.Scene {
         this.spawnCandy()
 
         // Check if the player reached 5 points
-        if (this.score >= 20) {
+        if (this.score >= 10) {
           this.createNextLevelButton()
         }
       }
@@ -105,8 +104,9 @@ class GameScene2 extends Phaser.Scene {
       this.carGroup,
       (playerCollide, carCollide) => {
         carCollide.destroy()
-        playerCollide.setTint(0xff0000)
         this.sound.play("crash")
+        playerCollide.setTint(0xff0000)
+
         this.lives--
         this.livesText.setText("Lives: " + this.lives.toString())
 
@@ -121,7 +121,7 @@ class GameScene2 extends Phaser.Scene {
           })
         }
       }
-    );
+    )
   }
 
   update(time, delta) {
@@ -156,79 +156,46 @@ class GameScene2 extends Phaser.Scene {
     const minY = this.player.height / 2
     const maxY = this.cameras.main.height - this.player.height / 2
     this.player.y = Phaser.Math.Clamp(this.player.y, minY, maxY)
-
-
-        // Update car movement and check for screen boundaries
-  this.carGroup.getChildren().forEach((car) => {
-    // Move the car horizontally based on its moveSpeed property
-    car.x += car.moveSpeed
-
-    // Check if the car has reached the edges of the screen
-    if (car.x < car.width / 2 || car.x > this.cameras.main.width - car.width / 2) {
-      // Reverse the car's moveSpeed to change its direction
-      car.moveSpeed *= -1
-
-      // Move the car back inside the screen bounds
-      car.x = Phaser.Math.Clamp(car.x, car.width / 2, this.cameras.main.width - car.width / 2)
-    }
-  })
-  
-    // Update car movement and check for screen boundaries
-    this.carGroup.getChildren().forEach((car) => {
-      // Move the car horizontally based on its moveSpeed property
-      car.x += car.moveSpeed
-  
-      // Check if the car has reached the edges of the screen
-      if (car.x < 0 || car.x > this.cameras.main.width) {
-        // Reverse the car's moveSpeed to change its direction
-        car.moveSpeed *= -1
-  
-        // Move the car back inside the screen bounds
-        car.x = Phaser.Math.Clamp(car.x, 0, this.cameras.main.width)
-      }
-    })
-}
-  
-
-createCar(carType) {
-  const centerX = this.cameras.main.width / 2
-  const centerY = this.cameras.main.height / 2
-  const minDistance = 300 // Minimum distance between cars
-  const playerSafeDistance = 200 // Minimum distance between the player and a spawned car
-
-  let carXLocation, carYLocation
-  let isOverlapping = true
-
-  // Keep generating random coordinates until a non-overlapping position is found
-  while (isOverlapping) {
-    carXLocation = Phaser.Math.FloatBetween(centerX - 400, centerX + 400)
-    carYLocation = Phaser.Math.FloatBetween(centerY - 400, centerY + 400)
-
-    // Calculate the distance between the car and the player
-    const distanceToPlayer = Phaser.Math.Distance.Between(
-      this.player.x,
-      this.player.y,
-      carXLocation,
-      carYLocation
-    )
-
-    // Check if the car is too close to the player
-    if (distanceToPlayer > playerSafeDistance) {
-      // Check if the car overlaps with other cars
-      isOverlapping = this.checkCarOverlap(carXLocation, carYLocation, minDistance)
-    }
   }
 
-  const car = this.physics.add.sprite(carXLocation, carYLocation, "christmasCar")
-  car.moveSpeed = Phaser.Math.FloatBetween(2, 6) // Set a random move speed for the car
+  createCar(carType) {
+    const centerX = this.cameras.main.width / 2
+    const centerY = this.cameras.main.height / 2
+    const minDistance = 300 // Minimum distance between cars
+    const playerSafeDistance = 200 // Minimum distance between the player and a spawned car
 
-  car.setCollideWorldBounds(true)
-  car.setBounce(1, 1)
-  car.setImmovable(true)
+    let carXLocation, carYLocation
+    let isOverlapping = true
 
-  this.carGroup.add(car)
-}
+    // Keep generating random coordinates until a non-overlapping position is found
+    while (isOverlapping) {
+      carXLocation = Phaser.Math.FloatBetween(centerX - 400, centerX + 400)
+      carYLocation = Phaser.Math.FloatBetween(centerY - 400, centerY + 400)
 
+      // Calculate the distance between the car and the player
+      const distanceToPlayer = Phaser.Math.Distance.Between(
+        this.player.x,
+        this.player.y,
+        carXLocation,
+        carYLocation
+      )
+
+      // Check if the car is too close to the player
+      if (distanceToPlayer > playerSafeDistance) {
+        // Check if the car overlaps with other cars
+        isOverlapping = this.checkCarOverlap(carXLocation, carYLocation, minDistance)
+      }
+    }
+
+    const car = this.physics.add.sprite(carXLocation, carYLocation, "car")
+    car.moveSpeed = Phaser.Math.FloatBetween(2, 6) // Set a random move speed for the car
+
+    car.setCollideWorldBounds(true)
+    car.setBounce(1, 1)
+    car.setImmovable(true)
+
+    this.carGroup.add(car)
+  }
 
   checkCarOverlap(x, y, minDistance) {
     const cars = this.carGroup.getChildren()
@@ -248,40 +215,36 @@ createCar(carType) {
   spawnCandy() {
     const candyXLocation = Phaser.Math.Between(100, this.cameras.main.width - 100)
     const candyYLocation = Phaser.Math.Between(100, this.cameras.main.height - 100)
-    const candy = this.candyGroup.create(candyXLocation, candyYLocation, "christmasCandy")
+    const candy = this.candyGroup.create(candyXLocation, candyYLocation, "candy")
     candy.setCollideWorldBounds(true)
     candy.setBounce(1, 1)
   }
-
 
   createNextLevelButton() {
     // Create the next level button
     const nextLevelButton = this.add.image(
       this.cameras.main.width / 2,
       this.cameras.main.height / 2,
-      "nextLevel2"
+      "nextLevel"
     )
     nextLevelButton.setInteractive({ useHandCursor: true })
     nextLevelButton.on("pointerdown", () => {
       // Save the score in localStorage for Level 1
       localStorage.setItem("Score", this.score.toString())
-      this.scene.start("gameScene3", { score: this.score }) // Pass the score as data to Level 2
+      this.scene.start("gameScene2", { score: this.score }) // Pass the score as data to Level 2
     }, this)
 
     // Clear all existing cars and candies
     this.carGroup.clear(true, true)
     this.candyGroup.clear(true, true)
-
+  
     // Reset the player position
     this.player.x = this.cameras.main.width / 2
     this.player.y = this.cameras.main.height - 100
   }
-
+  
 
   gameOver() {
-    // Save the score in localStorage
-    localStorage.setItem("score", this.score.toString())
-
     this.physics.pause()
     this.gameOverTextStyle = this.add
     .text(1920 / 2, 1080 / 2, "GAME OVER click to restart", this.gameOverTextStyle)
@@ -289,6 +252,6 @@ createCar(carType) {
   this.gameOverTextStyle.setInteractive({ useHandCursor: true })
   this.gameOverTextStyle.on("pointerdown", () => this.scene.start("gameScene"))
   }
-} 
+}
 
-export default GameScene2
+export default GameScene
